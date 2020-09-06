@@ -3,8 +3,6 @@ const Knex = require('knex');
 const knex = Knex({ client : 'sqlite3' });
 const expect = require('expect.js');
 
-console.log(url2sql);
-
 describe('Post operations', function () {
 
   it('insert in table', () => {

@@ -1,20 +1,23 @@
 import Knex from 'knex';
-import { URL } from 'url'
+import { URL } from 'url';
+import { Request, Response, NextFunction } from 'express';
+
+const logger = (...args: any[]): any => process.env.DEBUG ? logger(...args) : null;
 
 export const url2sql = (urlString: string, knex: Knex, method = 'GET', body = {}): Knex.QueryBuilder => {
   const url = new URL(urlString, 'http://localhost');
-  const regexp = new RegExp(`^\/?([^\/])+(?:\/([^\/]+))?$`, 'g');
-  // console.log(url);
+  const regexp = new RegExp(`^\/?([^\/]+)(?:\/([^\/]+))?$`, 'g');
 
-  const result = regexp.exec(url.pathname)
-  // console.log(result);
+  const result = regexp.exec(url.pathname);
+
+  logger('regexp results', result);
 
   const table = result[1];
   const id = result[2];
 
   if (table && method === 'GET' ){
-      console.log('search params: ', url.searchParams)
-      console.log('search params keys:', url.searchParams.keys());
+      logger('search params: ', url.searchParams)
+      logger('search params keys:', url.searchParams.keys());
       const where: Record<string, any> = {};
 
       if (id) {
@@ -56,4 +59,16 @@ export const url2sql = (urlString: string, knex: Knex, method = 'GET', body = {}
 
 
   throw new Error();
+}
+
+export const middleware = (knex: Knex) => async (req: Request, res: Response, next: NextFunction) => {
+  logger('in middleware !', req.url);
+  try {
+    const result = await url2sql(req.url, knex, req.method, req.body);
+    logger('results: ', result);
+
+    return res.json(result);
+  } catch (error) {
+    return next(error);
+  }
 }
