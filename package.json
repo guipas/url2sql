@@ -1,7 +1,12 @@
 {
   "name": "url2sql",
   "version": "0.0.1",
-  "description": "",
+  "description": "A simple function + express middleware to transform an URL into a database query",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/guipas/url2sql.git"
+  },
+  "homepage": "https://github.com/guipas/url2sql",
   "main": "dist/index.js",
   "types" : "dist/index.d.ts",
   "files": ["dist/**/*"],
@@ -11,7 +16,7 @@
     "dev": "chokidar \"src/**/*.ts\" \"test/*.js\" -d 500 -t 500 -c \"npm run test\"",
     "prepare": "npm run build"
   },
-  "keywords": [],
+  "keywords": ["url", "sql", "knex", "express"],
   "author": "",
   "license": "ISC",
   "dependencies": {

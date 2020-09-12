@@ -1,4 +1,4 @@
-import Knex from 'knex';
+import * as Knex from 'knex';
 import { URL } from 'url';
 import { Request, Response, NextFunction } from 'express';
 
