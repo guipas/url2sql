@@ -2,7 +2,7 @@ import * as Knex from 'knex';
 import { URL } from 'url';
 import { Request, Response, NextFunction } from 'express';
 
-const logger = (...args: any[]): any => process.env.DEBUG ? logger(...args) : null;
+const logger = (...args: any[]): any => process.env.DEBUG ? console.log(...args) : null;
 
 export const url2sql = (urlString: string, knex: Knex, method = 'GET', body = {}): Knex.QueryBuilder => {
   const url = new URL(urlString, 'http://localhost');
