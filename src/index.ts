@@ -12,7 +12,7 @@ export const url2sql = (urlString: string, knex: Knex, method = 'GET', body = {}
 
   logger('regexp results', result);
 
-  const table = result[1];
+  const table = result[1]?.split?.('.')?.pop();
   const id = result[2];
 
   if (table && method === 'GET' ){
@@ -25,6 +25,29 @@ export const url2sql = (urlString: string, knex: Knex, method = 'GET', body = {}
       }
 
       const qb = knex(table).where(where);
+
+      if(url.searchParams.get('where')) {
+        const wheres: string[] = url.searchParams.getAll('where');
+        for (const where of wheres) {
+          const parsedWhere = where.split(`.`);
+          if (parsedWhere.length !== 3) { throw `Wrong number of argument for "${where}" where clause, expect 3, got ${parsedWhere.length}`; }
+          const column = parsedWhere[0];
+          const operatorsMap: Record<string, string> = {
+            eq: '=',
+            neq: '!=',
+            in: 'in',
+            nin: 'not in',
+            lt: '<',
+            gt: '>',
+            lte: '<=',
+            gte: '>=',
+            like: 'like',
+          };
+          const operator = operatorsMap[parsedWhere[1]];
+          const value = (operator === operatorsMap.in || operator === operatorsMap.nin) ? parsedWhere[2].split(',') : parsedWhere[2];
+          qb.where(column, operator, value);
+        }
+      }
       
       if (url.searchParams.get('limit')) {
         qb.limit(parseInt(url.searchParams.get('limit'), 10));
@@ -62,7 +85,7 @@ export const url2sql = (urlString: string, knex: Knex, method = 'GET', body = {}
 }
 
 export const middleware = (knex: Knex) => async (req: Request, res: Response, next: NextFunction) => {
-  logger('in middleware !', req.url);
+  logger('Enter url2Sql middleware', req.url);
   try {
     const result = await url2sql(req.url, knex, req.method, req.body);
     logger('results: ', result);

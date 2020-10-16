@@ -3,7 +3,7 @@ const Knex = require('knex');
 const knex = Knex({ client : 'sqlite3' });
 const expect = require('expect.js');
 
-describe('get operations', function () {
+describe.only('get operations', function () {
 
   it('select table', () => {
     const urlQueryBuilder = url2sql('/a', knex);
@@ -62,6 +62,58 @@ describe('get operations', function () {
     const urlQueryBuilder = url2sql('/a?orderBy=z desc', knex);
     const queryBuilder = knex('a').orderBy('z', 'desc');
 
+    console.log(queryBuilder.toString())
+    expect(urlQueryBuilder.toString()).to.equal(queryBuilder.toString());
+  });
+
+  it('select table with where clause', () => {
+    const urlQueryBuilder = url2sql('/a?where=x.eq.1', knex);
+    const queryBuilder = knex('a').where('x', '=', '1');
+
+    console.log(queryBuilder.toString())
+    expect(urlQueryBuilder.toString()).to.equal(queryBuilder.toString());
+  });
+
+  it('select table with 2 where clause', () => {
+    const urlQueryBuilder = url2sql('/a?where=x.eq.1&where=y.neq.2', knex);
+    const queryBuilder = knex('a').where('x', '=', '1').where('y', '!=', '2');
+
+    console.log(queryBuilder.toString())
+    expect(urlQueryBuilder.toString()).to.equal(queryBuilder.toString());
+  });
+
+  it('select table with "in" where', () => {
+    const urlQueryBuilder = url2sql('/a?where=x.in.1,2', knex);
+    const queryBuilder = knex('a').where('x', 'in', ['1', '2']);
+
+    console.log(urlQueryBuilder.toString())
+    console.log(queryBuilder.toString())
+    expect(urlQueryBuilder.toString()).to.equal(queryBuilder.toString());
+  });
+
+  it('select table with "not in" where', () => {
+    const urlQueryBuilder = url2sql('/a?where=x.nin.1,2', knex);
+    const queryBuilder = knex('a').where('x', 'not in', ['1', '2']);
+
+    console.log(urlQueryBuilder.toString())
+    console.log(queryBuilder.toString())
+    expect(urlQueryBuilder.toString()).to.equal(queryBuilder.toString());
+  });
+
+  it('select table with  multiple where clauses', () => {
+    const urlQueryBuilder = url2sql('/a?where=x.nin.1,2&where=y.gt.3', knex);
+    const queryBuilder = knex('a').where('x', 'not in', ['1', '2']).andWhere('y', '>', '3');
+
+    console.log(urlQueryBuilder.toString())
+    console.log(queryBuilder.toString())
+    expect(urlQueryBuilder.toString()).to.equal(queryBuilder.toString());
+  });
+
+  it('mixed operators 1', () => {
+    const urlQueryBuilder = url2sql('/a?where=x.in.1,2&orderBy=z desc&limit=1', knex);
+    const queryBuilder = knex('a').where('x', 'in', ['1', '2']).orderBy('z', 'desc').limit('1');
+
+    console.log(urlQueryBuilder.toString())
     console.log(queryBuilder.toString())
     expect(urlQueryBuilder.toString()).to.equal(queryBuilder.toString());
   });
