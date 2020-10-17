@@ -4,30 +4,38 @@ import { Request, Response, NextFunction } from 'express';
 
 const logger = (...args: any[]): any => process.env.DEBUG ? console.log(...args) : null;
 
-export const url2sql = (urlString: string, knex: Knex, method = 'GET', body = {}): Knex.QueryBuilder => {
-  const url = new URL(urlString, 'http://localhost');
-  const regexp = new RegExp(`^\/?([^\/]+)(?:\/([^\/]+))?$`, 'g');
+interface IRessourceQuery {
+  table: string,
+  id?: string,
+  method: string,
+  knex: Knex,
+  body: any;
+  modifiers: {
+    where?: string[];
+    limit?: string;
+    offset?: string;
+    orderBy?: string;
+  };
+}
 
-  const result = regexp.exec(url.pathname);
+export const buildQuery = ({ table, id, knex, modifiers: queryParams, body, method }: IRessourceQuery) => {
 
-  logger('regexp results', result);
+  if (!table) { throw 'no table prodvided' }
+  if (!method) { throw 'no method provided' }
 
-  const table = result[1]?.split?.('.')?.pop();
-  const id = result[2];
+  method = method.toLocaleUpperCase();
 
-  if (table && method === 'GET' ){
-      logger('search params: ', url.searchParams)
-      logger('search params keys:', url.searchParams.keys());
+  if (!['GET', 'PUT', 'POST', 'DELETE'].includes(method)) { throw 'Unkown method'; }
+
+  if (method === 'GET' ){
       const where: Record<string, any> = {};
 
-      if (id) {
-        where.id = id;
-      }
+      if (id) {  where.id = id; }
 
       const qb = knex(table).where(where);
 
-      if(url.searchParams.get('where')) {
-        const wheres: string[] = url.searchParams.getAll('where');
+      if(queryParams.where) {
+        const wheres: string[] = queryParams.where;
         for (const where of wheres) {
           const parsedWhere = where.split(`.`);
           if (parsedWhere.length !== 3) { throw `Wrong number of argument for "${where}" where clause, expect 3, got ${parsedWhere.length}`; }
@@ -49,16 +57,16 @@ export const url2sql = (urlString: string, knex: Knex, method = 'GET', body = {}
         }
       }
       
-      if (url.searchParams.get('limit')) {
-        qb.limit(parseInt(url.searchParams.get('limit'), 10));
+      if (queryParams.limit) {
+        qb.limit(parseInt(queryParams.limit, 10));
       }
       
-      if (url.searchParams.get('offset')) {
-        qb.offset(parseInt(url.searchParams.get('offset'), 10));
+      if (queryParams.offset) {
+        qb.offset(parseInt(queryParams.offset, 10));
       }
       
-      if (url.searchParams.get('orderBy')) {
-        const orderByStr = url.searchParams.get('orderBy');
+      if (queryParams.orderBy) {
+        const orderByStr = queryParams.orderBy;
         const orderBySplit = orderByStr.split(' ');
         const orderByValue = orderBySplit[0];
         const orderByDir = orderBySplit[1] === 'desc' ? 'desc' : 'asc';
@@ -66,22 +74,42 @@ export const url2sql = (urlString: string, knex: Knex, method = 'GET', body = {}
       }
 
       return qb;
-  } else if (table && !id && method === 'POST') {
-    const qb = knex(table).insert(body);
-
-    return qb;
-  } else if (table && id && method === 'PUT') {
-    const qb = knex(table).where('id', id).update(body);
-
-    return qb;
-  } else if (table && id  && method === 'DELETE') {
-    const qb = knex(table).where('id', id).delete();
-
-    return qb;
+  } else if (!id && method === 'POST') {
+    return knex(table).insert(body);
+  } else if (id && method === 'PUT') {
+    return knex(table).where('id', id).update(body);
+  } else if (id  && method === 'DELETE') {
+    return knex(table).where('id', id).delete();
   }
 
-
   throw new Error();
+}
+
+export const url2sql = (urlString: string, knex: Knex, method = 'GET', body = {}): Knex.QueryBuilder => {
+  
+  const url = new URL(urlString, 'http://localhost');
+  const regexp = new RegExp(`^\/?([^\/]+)(?:\/([^\/]+))?$`, 'g');
+  const result = regexp.exec(url.pathname);
+
+  logger('regexp results', result);
+
+  const table = result[1]?.split?.('.')?.pop();
+  const id = result[2];
+
+  return buildQuery({
+    table,
+    id,
+    method,
+    knex,
+    body,
+    modifiers: {
+      where: url.searchParams.getAll('where'),
+      limit: url.searchParams.get('limit'),
+      offset: url.searchParams.get('offset'),
+      orderBy: url.searchParams.get('orderBy'),
+    }
+  })
+
 }
 
 export const middleware = (knex: Knex) => async (req: Request, res: Response, next: NextFunction) => {
