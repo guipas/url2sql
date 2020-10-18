@@ -1,4 +1,5 @@
 import * as Knex from 'knex';
+import { buildWhereArray } from './buildWhereArray';
 
 
 interface IRessourceQuery {
@@ -8,7 +9,7 @@ interface IRessourceQuery {
   knex: Knex,
   body: any;
   modifiers: {
-    where?: [string, string, string | string[]][];//[ ['id' 'in', ['1', '2' , '3']] ]
+    where?: string | string[];
     limit?: number | string;
     offset?: number | string;
     orderBy?: string;
@@ -32,9 +33,11 @@ export const buildQuery = ({ table, id, knex, modifiers, body, method }: IRessou
       const qb = knex(table).where(where);
 
       if(modifiers.where) {
+        const wheres: string[] = Array.isArray(modifiers.where) ? modifiers.where : [modifiers.where];
         for (const where of modifiers.where) {
-          if (where.length !== 3) { throw `Wrong number of argument for "${where}" where clause, expect 3, got ${where.length}`; }
-          qb.where(...where);
+          const parsedWhere = buildWhereArray(where);
+          if (parsedWhere.length !== 3) { throw `Wrong number of argument for "${where}" where clause, expect 3, got ${parsedWhere.length}`; }
+          qb.where(...parsedWhere);
         }
       }
       

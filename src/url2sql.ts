@@ -22,7 +22,7 @@ export const url2sql = (urlString: string, knex: Knex, method = 'GET', body = {}
     knex,
     body,
     modifiers: {
-      where: url.searchParams.getAll('where').map(buildWhereArray),
+      where: url.searchParams.getAll('where'),
       limit: url.searchParams.get('limit'),
       offset: url.searchParams.get('offset'),
       orderBy: url.searchParams.get('orderBy'),
