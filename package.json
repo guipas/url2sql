@@ -1,6 +1,6 @@
 {
   "name": "url2sql",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A simple function + express middleware to transform an URL into a database query",
   "repository": {
     "type": "git",
