@@ -1,4 +1,4 @@
-import Knex from "knex";
+import * as Knex from "knex";
 import { buildQuery } from "./buildQuery";
 import { buildWhereArray } from "./buildWhereArray";
 import { logger } from "./utils/logger";

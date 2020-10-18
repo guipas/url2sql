@@ -1,5 +1,5 @@
 import { NextFunction, Response, Request } from "express";
-import Knex from "knex";
+import * as Knex from "knex";
 import { url2sql } from "./url2sql";
 import { logger } from "./utils/logger";
 
