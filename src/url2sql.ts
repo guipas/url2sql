@@ -3,6 +3,7 @@ import { buildQuery } from "./buildQuery";
 import { buildWhereArray } from "./buildWhereArray";
 import { logger } from "./utils/logger";
 
+
 export const url2sql = (urlString: string, knex: Knex, method = 'GET', body = {}): Knex.QueryBuilder => {
   
   const url = new URL(urlString, 'http://localhost');

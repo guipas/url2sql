@@ -3,6 +3,7 @@ import Knex from "knex";
 import { url2sql } from "./url2sql";
 import { logger } from "./utils/logger";
 
+
 export const middleware = (knex: Knex) => async (req: Request, res: Response, next: NextFunction) => {
   logger('Enter url2Sql middleware', req.url);
   try {

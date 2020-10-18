@@ -1,4 +1,5 @@
 
+
 const operatorsMap: Record<string, string> = {
   eq: '=',
   neq: '!=',

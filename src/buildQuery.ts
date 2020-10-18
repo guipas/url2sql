@@ -1,5 +1,6 @@
 import * as Knex from 'knex';
 
+
 interface IRessourceQuery {
   table: string,
   id?: string,
