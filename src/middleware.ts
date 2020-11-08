@@ -1,14 +1,24 @@
 import { NextFunction, Response, Request } from "express";
 import * as Knex from "knex";
-import { url2sql } from "./url2sql";
+import { processRequest } from "./processRequest";
 import { logger } from "./utils/logger";
 
+interface IMiddlewareOptions {
+  tableParamName?: string;
+  idParamName?: string;
+}
 
-export const middleware = (knex: Knex) => async (req: Request, res: Response, next: NextFunction) => {
+export const middleware = (knex: Knex, options?: IMiddlewareOptions) => async (req: Request, res: Response, next: NextFunction) => {
   logger('Enter url2Sql middleware', req.url);
   try {
-    const result = await url2sql(req.url, knex, req.method, req.body);
-    logger('results: ', result);
+    const result = await processRequest({
+      table: req.params[options?.tableParamName || 'table'],
+      id: req.params[options?.idParamName || 'id'],
+      method: req.method,
+      knex,
+      body: req.body,
+      query: req.query,
+    });
 
     return res.json(result);
   } catch (error) {

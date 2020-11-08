@@ -3,7 +3,7 @@ const Knex = require('knex');
 const knex = Knex({ client : 'sqlite3' });
 const expect = require('expect.js');
 
-describe.only('get operations', function () {
+describe('get operations', function () {
 
   it('select table', () => {
     const urlQueryBuilder = url2sql('/a', knex);
@@ -112,6 +112,15 @@ describe.only('get operations', function () {
   it('mixed operators 1', () => {
     const urlQueryBuilder = url2sql('/a?where=x.in.1,2&orderBy=z desc&limit=1', knex);
     const queryBuilder = knex('a').where('x', 'in', ['1', '2']).orderBy('z', 'desc').limit('1');
+
+    console.log(urlQueryBuilder.toString())
+    console.log(queryBuilder.toString())
+    expect(urlQueryBuilder.toString()).to.equal(queryBuilder.toString());
+  });
+
+  it('complex where', () => {
+    const urlQueryBuilder = url2sql(`/a?whereObject=${encodeURIComponent(`{ "or" : ["x.eq.1", "y.eq.2"]}`)}`, knex);
+    const queryBuilder = knex('a').orWhere(function () {this.andWhere('x', '=', '1')}).orWhere(function(){this.andWhere('y', '=', '2')});
 
     console.log(urlQueryBuilder.toString())
     console.log(queryBuilder.toString())

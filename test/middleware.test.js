@@ -31,7 +31,7 @@ describe('middleware', function () {
     
     const app = express();
     app.use(bodyParser.json());
-    app.use(middleware(knex));
+    app.all('/:table/:id?', middleware(knex));
 
     return new Promise((resolve, reject) => {
       app.listen(port, () => {
